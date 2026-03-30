@@ -1,30 +1,48 @@
 # ==========================================
-# STAGE 1: Frontend Build (React + Vite)
+# STAGE 1: Build (Laravel + Vite together)
 # ==========================================
-FROM node:20-alpine AS frontend-builder
+FROM php:8.3-cli-alpine AS builder
 
 WORKDIR /app
 
-# Copy package files first for better caching
-COPY package*.json ./
+# Install system dependencies (PHP + Node)
+RUN apk add --no-cache \
+    nodejs \
+    npm \
+    git \
+    curl \
+    unzip \
+    libzip-dev \
+    icu-dev \
+    oniguruma-dev
+
+# Install PHP extensions
+RUN docker-php-ext-install zip intl
+
+# Install Composer
+COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
+
+# Copy project files
+COPY . .
+
+# Install Laravel dependencies
+RUN composer install --no-dev --optimize-autoloader --no-interaction
+
+# Install Node dependencies
 RUN npm install
 
-# Copy application code and build assets
-COPY . .
+# Build Vite (NOW PHP exists, so wayfinder works ✅)
 RUN npm run build
 
+
 # ==========================================
-# STAGE 2: Backend & Runtime (Laravel)
+# STAGE 2: Runtime (Laravel App)
 # ==========================================
 FROM php:8.3-fpm-alpine
 
-# Set working directory
 WORKDIR /var/www
 
 # Install system dependencies
-# - libpq-dev is required for PostgreSQL/Supabase
-# - icu-dev for intl extension
-# - libzip-dev for zip extension
 RUN apk add --no-cache \
     libpq-dev \
     libzip-dev \
@@ -45,31 +63,21 @@ RUN docker-php-ext-install \
     bcmath \
     opcache
 
-# Use the production PHP config
+# Use production PHP config
 RUN mv "$PHP_INI_DIR/php.ini-production" "$PHP_INI_DIR/php.ini"
 
-# Get latest Composer from formal image
+# Install Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
-# Copy only the necessary Laravel application files
-COPY . .
+# Copy full app from builder
+COPY --from=builder /app /var/www
 
-# Copy the built React assets from STAGE 1
-# This assumes Vite builds into public/build (default for Laravel Vite)
-COPY --from=frontend-builder /app/public/build ./public/build
-
-# Install Laravel dependencies (Production mode)
-RUN composer install --no-dev --optimize-autoloader --no-interaction
-
-# Security: Set permissions for Laravel storage and cache folders
+# Set permissions
 RUN chown -R www-data:www-data /var/www/storage /var/www/bootstrap/cache \
     && chmod -R 775 /var/www/storage /var/www/bootstrap/cache
 
-# Optimization: Pre-cache Laravel config and routes
-# Note: These require a valid APP_KEY in the environment
-# RUN php artisan config:cache && php artisan route:cache
-
+# Expose port
 EXPOSE 9000
 
-# Start PHP-FPM
-CMD ["php-fpm"]
+# IMPORTANT: Serve Laravel (not php-fpm)
+CMD ["php", "artisan", "serve", "--host=0.0.0.0", "--port=9000"]
