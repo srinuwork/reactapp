@@ -1,6 +1,6 @@
 import { Head, Link, usePage } from '@inertiajs/react';
+import { LayoutDashboard, UserPlus, ArrowRight, Github, Twitter, Layers, Zap, Shield } from 'lucide-react';
 import { dashboard, login, register } from '@/routes';
-import { LayoutDashboard, LogIn, UserPlus, ArrowRight, Github, Twitter, Layers, Zap, Shield } from 'lucide-react';
 
 export default function Welcome({
     canRegister = true,
