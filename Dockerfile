@@ -1,31 +1,32 @@
 # ==========================================
 # STAGE 1: Build (Laravel + Vite together)
 # ==========================================
-FROM php:8.3-cli-alpine AS builder
+FROM php:8.3-cli AS builder
 
 WORKDIR /app
 
-# Install system dependencies (PHP + Node + DB libs)
-RUN apk add --no-cache \
+# Install system dependencies
+# (Debian uses 'apt' instead of 'apk')
+RUN apt-get update && apt-get install -y \
     nodejs \
     npm \
     git \
     curl \
-    unzip \
-    libzip-dev \
-    icu-dev \
-    oniguruma-dev \
     libpq-dev \
-    libpng-dev
+    libzip-dev \
+    libpng-dev \
+    libicu-dev \
+    unzip \
+    && rm -rf /var/lib/apt/lists/*
 
-# Install ALL PHP extensions needed by Laravel during build
+# Install PHP extensions
 RUN docker-php-ext-install \
+    pdo_pgsql \
+    pgsql \
     zip \
-    intl \
-    mbstring \
-    bcmath \
     gd \
-    pdo_pgsql
+    intl \
+    bcmath
 
 # Install Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
@@ -33,8 +34,9 @@ COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 # Copy project files
 COPY . .
 
-# Install Laravel dependencies (Disabled scripts to prevent DB connection errors during build)
-RUN composer install --no-dev --optimize-autoloader --no-interaction --no-scripts
+# Install Laravel dependencies
+# Use -d memory_limit=-1 to prevent Exit Code 2 (Memory crashes)
+RUN php -d memory_limit=-1 /usr/bin/composer install --no-dev --optimize-autoloader --no-interaction --no-scripts
 
 # Install Node dependencies and Build Assets
 RUN npm install && npm run build
@@ -42,19 +44,18 @@ RUN npm install && npm run build
 # ==========================================
 # STAGE 2: Runtime (Laravel App)
 # ==========================================
-FROM php:8.3-fpm-alpine
+FROM php:8.3-fpm
 
 WORKDIR /var/www
 
 # Install runtime system dependencies
-RUN apk add --no-cache \
+RUN apt-get update && apt-get install -y \
     libpq-dev \
     libzip-dev \
     libpng-dev \
-    icu-dev \
-    oniguruma-dev \
-    curl \
-    unzip
+    libicu-dev \
+    unzip \
+    && rm -rf /var/lib/apt/lists/*
 
 # Install PHP extensions
 RUN docker-php-ext-install \
@@ -69,9 +70,6 @@ RUN docker-php-ext-install \
 # Use production PHP config
 RUN mv "$PHP_INI_DIR/php.ini-production" "$PHP_INI_DIR/php.ini"
 
-# Get a clean Composer (helpful for runtime scripts)
-COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
-
 # Copy full app from builder
 COPY --from=builder /app /var/www
 
@@ -81,5 +79,5 @@ RUN chown -R www-data:www-data /var/www/storage /var/www/bootstrap/cache \
 
 EXPOSE 9000
 
-# Start PHP-FPM (Standard for Production)
+# Start PHP-FPM
 CMD ["php-fpm"]
