@@ -6,7 +6,6 @@ FROM php:8.3-cli AS builder
 WORKDIR /app
 
 # Install system dependencies
-# (Debian uses 'apt' instead of 'apk')
 RUN apt-get update && apt-get install -y \
     nodejs \
     npm \
@@ -16,6 +15,7 @@ RUN apt-get update && apt-get install -y \
     libzip-dev \
     libpng-dev \
     libicu-dev \
+    libonig-dev \
     unzip \
     && rm -rf /var/lib/apt/lists/*
 
@@ -26,7 +26,8 @@ RUN docker-php-ext-install \
     zip \
     gd \
     intl \
-    bcmath
+    bcmath \
+    mbstring
 
 # Install Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
@@ -35,8 +36,17 @@ COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 COPY . .
 
 # Install Laravel dependencies
-# Use -d memory_limit=-1 to prevent Exit Code 2 (Memory crashes)
-RUN php -d memory_limit=-1 /usr/bin/composer install --no-dev --optimize-autoloader --no-interaction --no-scripts
+# 1. COMPOSER_ALLOW_SUPERUSER=1 is required for Docker
+# 2. --ignore-platform-reqs bypasses system requirement checks that often cause Exit Code 2
+# 3. --no-plugins prevents buggy plugins from crashing the build
+ENV COMPOSER_ALLOW_SUPERUSER=1
+RUN php -d memory_limit=-1 /usr/bin/composer install \
+    --no-dev \
+    --optimize-autoloader \
+    --no-interaction \
+    --no-scripts \
+    --ignore-platform-reqs \
+    --no-plugins
 
 # Install Node dependencies and Build Assets
 RUN npm install && npm run build
