@@ -1,0 +1,25 @@
+# --- Development local files ---
+node_modules
+vendor
+.env
+.idea
+.vscode
+.git
+.github
+
+# --- Build assets (we recreate them from source) ---
+public/build
+storage/*.key
+
+# --- Temporary/Log files ---
+storage/logs/*.log
+storage/framework/cache/data/*
+storage/framework/sessions/*
+storage/framework/views/*.php
+storage/debugbar/
+
+# --- Other build-system artifacts ---
+npm-debug.log
+yarn-error.log
+.DS_Store
+Thumbs.db
