@@ -33,7 +33,7 @@ export default function Welcome({
                                 <Layers className="h-6 w-6 text-white" />
                             </div>
                             <span className="text-xl font-bold tracking-tight text-white group-hover:bg-clip-text group-hover:text-transparent group-hover:bg-gradient-to-r group-hover:from-indigo-400 group-hover:to-purple-400 transition-all duration-300">
-                                Welcome webworks
+                                Welcome WebWorks
                             </span>
                         </div>
 
