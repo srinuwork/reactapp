@@ -7,14 +7,18 @@ WORKDIR /app
 
 # Install system dependencies (PHP + Node)
 RUN apk add --no-cache \
-    nodejs \
-    npm \
-    git \
+    libpq-dev \
+    libzip-dev \
+    libpng-dev \
+    icu-dev \
+    oniguruma-dev \
     curl \
     unzip \
-    libzip-dev \
-    icu-dev \
-    oniguruma-dev
+    git \
+    build-base \
+    autoconf \
+    g++ \
+    make
 
 # Install PHP extensions
 RUN docker-php-ext-install \
