@@ -5,7 +5,7 @@ FROM php:8.3-cli-alpine AS builder
 
 WORKDIR /app
 
-# Install system dependencies (PHP + Node)
+# Install system dependencies (PHP + Node + DB libs)
 RUN apk add --no-cache \
     nodejs \
     npm \
@@ -14,13 +14,18 @@ RUN apk add --no-cache \
     unzip \
     libzip-dev \
     icu-dev \
-    oniguruma-dev
-    
-# Install PHP extensions
+    oniguruma-dev \
+    libpq-dev \
+    libpng-dev
+
+# Install ALL PHP extensions needed by Laravel during build
 RUN docker-php-ext-install \
     zip \
     intl \
-    mbstring
+    mbstring \
+    bcmath \
+    gd \
+    pdo_pgsql
 
 # Install Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
@@ -28,15 +33,11 @@ COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 # Copy project files
 COPY . .
 
-# Install Laravel dependencies
-RUN composer install --no-dev --optimize-autoloader --no-interaction
+# Install Laravel dependencies (Disabled scripts to prevent DB connection errors during build)
+RUN composer install --no-dev --optimize-autoloader --no-interaction --no-scripts
 
-# Install Node dependencies
-RUN npm install
-
-# Build Vite (NOW PHP exists, so wayfinder works ✅)
-RUN npm run build
-
+# Install Node dependencies and Build Assets
+RUN npm install && npm run build
 
 # ==========================================
 # STAGE 2: Runtime (Laravel App)
@@ -45,7 +46,7 @@ FROM php:8.3-fpm-alpine
 
 WORKDIR /var/www
 
-# Install system dependencies
+# Install runtime system dependencies
 RUN apk add --no-cache \
     libpq-dev \
     libzip-dev \
@@ -53,8 +54,7 @@ RUN apk add --no-cache \
     icu-dev \
     oniguruma-dev \
     curl \
-    unzip \
-    git
+    unzip
 
 # Install PHP extensions
 RUN docker-php-ext-install \
@@ -69,18 +69,17 @@ RUN docker-php-ext-install \
 # Use production PHP config
 RUN mv "$PHP_INI_DIR/php.ini-production" "$PHP_INI_DIR/php.ini"
 
-# Install Composer
+# Get a clean Composer (helpful for runtime scripts)
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
 # Copy full app from builder
 COPY --from=builder /app /var/www
 
-# Set permissions
+# Set permissions for Laravel
 RUN chown -R www-data:www-data /var/www/storage /var/www/bootstrap/cache \
     && chmod -R 775 /var/www/storage /var/www/bootstrap/cache
 
-# Expose port
 EXPOSE 9000
 
-# IMPORTANT: Serve Laravel (not php-fpm)
-CMD ["php", "artisan", "serve", "--host=0.0.0.0", "--port=9000"]
+# Start PHP-FPM (Standard for Production)
+CMD ["php-fpm"]
