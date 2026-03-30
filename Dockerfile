@@ -17,7 +17,13 @@ RUN apk add --no-cache \
     oniguruma-dev
 
 # Install PHP extensions
-RUN docker-php-ext-install zip intl
+RUN docker-php-ext-install \
+    zip \
+    intl \
+    mbstring \
+    tokenizer \
+    fileinfo \
+    ctype
 
 # Install Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
