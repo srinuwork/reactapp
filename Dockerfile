@@ -7,27 +7,20 @@ WORKDIR /app
 
 # Install system dependencies (PHP + Node)
 RUN apk add --no-cache \
-    libpq-dev \
-    libzip-dev \
-    libpng-dev \
-    icu-dev \
-    oniguruma-dev \
+    nodejs \
+    npm \
+    git \
     curl \
     unzip \
-    git \
-    build-base \
-    autoconf \
-    g++ \
-    make
-
+    libzip-dev \
+    icu-dev \
+    oniguruma-dev
+    
 # Install PHP extensions
 RUN docker-php-ext-install \
     zip \
     intl \
-    mbstring \
-    tokenizer \
-    fileinfo \
-    ctype
+    mbstring
 
 # Install Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
