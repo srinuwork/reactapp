@@ -15,11 +15,11 @@ export default function Welcome({
 
             <div className="relative min-h-screen overflow-hidden bg-[#030712] font-['Outfit',sans-serif] text-slate-200">
                 {/* Background Image with Overlay */}
-                <div 
+                <div
                     className="absolute inset-0 bg-cover bg-center bg-no-repeat opacity-40 mix-blend-screen"
                     style={{ backgroundImage: "url('/images/hero-bg.png')" }}
                 />
-                
+
                 {/* Decorative Gradients */}
                 <div className="absolute top-0 -left-4 w-72 h-72 bg-purple-600 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob"></div>
                 <div className="absolute top-0 -right-4 w-72 h-72 bg-blue-600 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob animation-delay-2000"></div>
@@ -33,7 +33,7 @@ export default function Welcome({
                                 <Layers className="h-6 w-6 text-white" />
                             </div>
                             <span className="text-xl font-bold tracking-tight text-white group-hover:bg-clip-text group-hover:text-transparent group-hover:bg-gradient-to-r group-hover:from-indigo-400 group-hover:to-purple-400 transition-all duration-300">
-                                Antigravity
+                                Welcome webworks
                             </span>
                         </div>
 
@@ -77,14 +77,14 @@ export default function Welcome({
                             </span>
                             NEW VERSION 2.0 IS LIVE
                         </div>
-                        
+
                         <h1 className="text-5xl lg:text-8xl font-bold tracking-tight text-white mb-8 animate-slide-up leading-tight">
-                            Build the <span className="bg-clip-text text-transparent bg-gradient-to-r from-indigo-400 via-purple-400 to-pink-400">Future</span> 
+                            Build the <span className="bg-clip-text text-transparent bg-gradient-to-r from-indigo-400 via-purple-400 to-pink-400">Future</span>
                             <br /> of Web Apps
                         </h1>
-                        
+
                         <p className="max-w-2xl text-lg lg:text-xl text-slate-400 mb-12 animate-slide-up-delay">
-                            The most powerful Laravel & React starter kit. Elevate your development with 
+                            The most powerful Laravel & React starter kit. Elevate your development with
                             pre-built premium components, seamless authentication, and state-of-the-art styling.
                         </p>
 
@@ -139,7 +139,8 @@ export default function Welcome({
                 </div>
 
                 {/* Custom Styles for Keyframe Animations */}
-                <style dangerouslySetInnerHTML={{ __html: `
+                <style dangerouslySetInnerHTML={{
+                    __html: `
                     @keyframes blob {
                         0% { transform: scale(1) translate(0px, 0px); }
                         33% { transform: scale(1.1) translate(30px, -50px); }
