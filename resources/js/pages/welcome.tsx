@@ -33,7 +33,7 @@ export default function Welcome({
                                 <Layers className="h-6 w-6 text-white" />
                             </div>
                             <span className="text-xl font-bold tracking-tight text-white group-hover:bg-clip-text group-hover:text-transparent group-hover:bg-gradient-to-r group-hover:from-indigo-400 group-hover:to-purple-400 transition-all duration-300">
-                                Welcome WebWorks
+                                Welcome WebWorks 
                             </span>
                         </div>
 
@@ -100,7 +100,7 @@ export default function Welcome({
                                 target="_blank"
                                 className="flex items-center gap-2 px-8 py-4 rounded-2xl bg-white/5 border border-white/10 text-white font-semibold backdrop-blur-md transition-all duration-300 hover:bg-white/10 hover:border-white/20 active:scale-95"
                             >
-                                <Github className="h-5 w-5" /> View Source
+                                <Github className="h-5 w-5" /> View  details
                             </a>
                         </div>
 
