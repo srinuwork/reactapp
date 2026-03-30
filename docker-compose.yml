@@ -1,15 +1,13 @@
-version: "3.9"
-
 services:
   app:
     build: .
     container_name: php_app_container
     volumes:
       - .:/var/www
+      # Anonymous volume to keep the container's vendor folder separate from the host
+      - /var/www/vendor
     ports:
       - "8000:8000"
-    # No depends_on mysql because we use external Supabase
     env_file:
       - .env
-    # Artisan serve is common for dev/local testing
     command: php artisan serve --host=0.0.0.0 --port=8000
